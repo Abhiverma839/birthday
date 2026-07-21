@@ -696,6 +696,7 @@
     document.body.style.overflow = 'auto';
     startAmbientFloaties();
     fireConfetti();
+    startMusic(); // starts the song right away — this click counts as user interaction, so browsers allow it
   });
 
   // Lock scroll while opening screen is showing
@@ -834,26 +835,35 @@
   --------------------------------------------------------- */
   var music = document.getElementById('bg-music');
   var musicToggle = document.getElementById('music-toggle');
-  var isPlaying = true;
+  var isPlaying = false;
+
+  function startMusic(){
+    if(isPlaying) return;
+    music.play().then(function(){
+      isPlaying = true;
+      musicToggle.textContent = '⏸️';
+      musicToggle.classList.add('playing');
+      musicToggle.setAttribute('aria-label','Pause birthday music');
+    }).catch(function(){
+      // No audio file found / playback blocked — let the user know gently
+      musicToggle.textContent = '🔇';
+      // silent fail here (no alert) since this is an automatic attempt, not a manual click
+    });
+  }
+
+  function stopMusic(){
+    music.pause();
+    isPlaying = false;
+    musicToggle.textContent = '🎵';
+    musicToggle.classList.remove('playing');
+    musicToggle.setAttribute('aria-label','Play birthday music');
+  }
 
   musicToggle.addEventListener('click', function(){
     if(!isPlaying){
-      music.play().then(function(){
-        isPlaying = true;
-        musicToggle.textContent = '⏸️';
-        musicToggle.classList.add('playing');
-        musicToggle.setAttribute('aria-label','Pause birthday music');
-      }).catch(function(){
-        // No audio file found / playback blocked — let the user know gently
-        musicToggle.textContent = '🔇';
-        alert('Add your birthday song file (e.g. "birthday-song.mp3") next to index.html to enable music.');
-      });
+      startMusic();
     } else {
-      music.pause();
-      isPlaying = false;
-      musicToggle.textContent = '🎵';
-      musicToggle.classList.remove('playing');
-      musicToggle.setAttribute('aria-label','Play birthday music');
+      stopMusic();
     }
   });
 
